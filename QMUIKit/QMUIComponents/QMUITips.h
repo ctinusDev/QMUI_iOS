@@ -100,6 +100,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (QMUITips *)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
 + (QMUITips *)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
++ (void)setSuccessImage:(UIImage *)image;
++ (void)setErrorImage:(UIImage *)image;
++ (void)setInfoImage:(UIImage *)image;
+
 /// 隐藏 tips
 + (void)hideAllTipsInView:(UIView *)view;
 + (void)hideAllTips;

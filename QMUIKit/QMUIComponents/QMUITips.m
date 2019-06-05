@@ -21,6 +21,10 @@
 
 const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 
+static NSString *kSuccessImage = nil;
+static NSString *kErrorImage = nil;
+static NSString *kInfoImage = nil;
+
 @interface QMUITips ()
 
 @property(nonatomic, strong) UIView *contentCustomView;
@@ -86,7 +90,8 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showSucceed:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_done"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+    UIImage *image = kSuccessImage ?: [QMUIHelper imageWithName:@"QMUI_tips_done"];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -103,7 +108,8 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showError:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_error"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+    UIImage *image = kErrorImage ?: [QMUIHelper imageWithName:@"QMUI_tips_error"];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -120,7 +126,8 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showInfo:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_info"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+    UIImage *image = kInfoImage ?: [QMUIHelper imageWithName:@"QMUI_tips_info"];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -289,6 +296,18 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
     [view addSubview:tips];
     tips.removeFromSuperViewWhenHide = YES;
     return tips;
+}
+
++ (void)setSuccessImage:(UIImage *)image {
+    kSuccessImage = image;
+}
+
++ (void)setErrorImage:(UIImage *)image {
+    kErrorImage = image;
+}
+
++ (void)setInfoImage:(UIImage *)image {
+    kInfoImage = image;
 }
 
 + (void)hideAllTipsInView:(UIView *)view {
