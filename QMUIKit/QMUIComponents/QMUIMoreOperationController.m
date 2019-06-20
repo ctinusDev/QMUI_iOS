@@ -208,6 +208,9 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     layoutY = self.contentPaddings.top;
     CGFloat contentWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentPaddings);
     
+    self.titleView.frame = CGRectMake(self.contentPaddings.left, layoutY, contentWidth, self.titleView.qmui_height);
+    layoutY = CGRectGetMaxY(self.titleView.frame);
+    
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         scrollView.frame = CGRectMake(self.contentPaddings.left, layoutY, contentWidth, CGRectGetHeight(scrollView.frame));
         
@@ -480,6 +483,16 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     self.contentView.backgroundColor = contentBackgroundColor;
 }
 
+- (void)setTitleView:(UIView *)titleView {
+    if (_titleView) {
+        [_titleView removeFromSuperview];
+    }
+    
+    _titleView = titleView;
+    
+    [self.contentView addSubview:_titleView];
+}
+
 - (void)setScrollViewSeparatorColor:(UIColor *)scrollViewSeparatorColor {
     _scrollViewSeparatorColor = scrollViewSeparatorColor;
     [self updateScrollViewsBorderStyle];
@@ -619,6 +632,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     __block CGFloat contentHeight = (self.cancelButton.hidden ? 0 : self.cancelButtonHeight + self.cancelButtonMarginTop);
+    contentHeight += self.titleView.qmui_height;
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];
         QMUIMoreOperationItemView *exampleItemView = itemSection.firstObject;

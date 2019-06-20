@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, strong) UIColor *scrollViewSeparatorColor UI_APPEARANCE_SELECTOR;// 每一行之间的顶部分隔线，对第一行无效
 @property(nonatomic, assign) UIEdgeInsets scrollViewContentInsets UI_APPEARANCE_SELECTOR;// 每一行内部的 padding
 
+@property(nullable, nonatomic, strong) UIView *titleView UI_APPEARANCE_SELECTOR;// 标题View
+
 @property(nullable, nonatomic, strong) UIColor *itemBackgroundColor UI_APPEARANCE_SELECTOR;// 按钮的背景色
 @property(nullable, nonatomic, strong) UIColor *itemTitleColor UI_APPEARANCE_SELECTOR;// 按钮的标题颜色
 @property(nullable, nonatomic, strong) UIFont  *itemTitleFont UI_APPEARANCE_SELECTOR;// 按钮的标题字体
