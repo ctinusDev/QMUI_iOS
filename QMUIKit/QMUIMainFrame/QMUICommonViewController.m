@@ -131,6 +131,7 @@
 - (void)showEmptyView {
     if (!self.emptyView) {
         self.emptyView = [[QMUIEmptyView alloc] initWithFrame:self.view.bounds];
+        self.emptyView.backgroundColor = [UIColor whiteColor];
     }
     [self.view addSubview:self.emptyView];
 }

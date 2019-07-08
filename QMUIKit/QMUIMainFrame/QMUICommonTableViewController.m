@@ -173,6 +173,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 - (void)showEmptyView {
     if (!self.emptyView) {
         self.emptyView = [[QMUIEmptyView alloc] init];
+        self.emptyView.backgroundColor = [UIColor whiteColor];
     }
     [self.tableView addSubview:self.emptyView];
     [self layoutEmptyView];
