@@ -284,6 +284,19 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
             [((UIViewController<QMUINavigationControllerTransitionDelegate> *)topViewController) viewControllerKeepingAppearWhenSetViewControllersWithAnimated:animated];
         }
     }
+    
+    [viewControllers enumerateObjectsUsingBlock:^(UIViewController * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (!NeedsBackBarButtonItemTitle) {
+            // 会自动从 UIBarButtonItem.title 取值作为下一个界面的返回按钮的文字
+            obj.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
+        } else {
+            UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)obj;
+            if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+                NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:obj];
+                obj.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL];
+            }
+        }
+    }];
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
