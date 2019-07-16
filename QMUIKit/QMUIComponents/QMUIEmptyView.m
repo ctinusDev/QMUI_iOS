@@ -91,6 +91,8 @@
     [self.contentView addSubview:self.detailTextLabel];
     
     _actionButton = [[QMUIButton alloc] init];
+    self.actionButton.backgroundColor = UIColorBlack;
+    self.actionButton.contentEdgeInsets = UIEdgeInsetsMake(8, 21, 8, 21);
     self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
     self.actionButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [self.contentView addSubview:self.actionButton];
@@ -301,18 +303,18 @@
     QMUIEmptyView *appearance = [QMUIEmptyView appearance];
     appearance.imageViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
     appearance.loadingViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
-    appearance.textLabelInsets = UIEdgeInsetsMake(0, 0, 10, 0);
+    appearance.textLabelInsets = UIEdgeInsetsMake(0, 0, 15, 0);
     appearance.detailTextLabelInsets = UIEdgeInsetsMake(0, 0, 14, 0);
     appearance.actionButtonInsets = UIEdgeInsetsZero;
     appearance.verticalOffset = -30;
     
-    appearance.textLabelFont = UIFontMake(15);
+    appearance.textLabelFont = UIFontMake(17);
     appearance.detailTextLabelFont = UIFontMake(14);
-    appearance.actionButtonFont = UIFontMake(15);
+    appearance.actionButtonFont = UIFontMake(17);
     
-    appearance.textLabelTextColor = UIColorMake(93, 100, 110);
+    appearance.textLabelTextColor = UIColorMake(102, 102, 102);
     appearance.detailTextLabelTextColor = UIColorMake(133, 140, 150);
-    appearance.actionButtonTitleColor = ButtonTintColor;
+    appearance.actionButtonTitleColor = UIColorMake(255, 255, 255);
 }
 
 @end
