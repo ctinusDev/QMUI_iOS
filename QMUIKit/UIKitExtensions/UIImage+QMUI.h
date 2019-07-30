@@ -169,6 +169,7 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
  *  @see qmui_imageResizedInLimitedSize:resizingMode:scale:
  */
 - (nullable UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size;
+- (nullable UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius byRoundingCorners:(UIRectCorner)corners scale:(CGFloat)scale;
 
 /**
  *  将原图按指定的 QMUIImageResizingMode 缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片，缩放后的图片的倍数保持与原图一致。

@@ -219,6 +219,17 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [self qmui_imageResizedInLimitedSize:size resizingMode:QMUIImageResizingModeScaleAspectFit];
 }
 
+- (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius byRoundingCorners:(UIRectCorner)corners scale:(CGFloat)scale {
+    if (cornerRadius <= 0) {
+        return self;
+    }
+    return [UIImage qmui_imageWithSize:self.size opaque:NO scale:scale actions:^(CGContextRef contextRef) {
+        [[UIBezierPath bezierPathWithRoundedRect:CGRectMakeWithSize(self.size) byRoundingCorners:corners cornerRadii:CGSizeMake(cornerRadius, cornerRadius)] addClip];
+        [self drawInRect:CGRectMakeWithSize(self.size)];
+    }];
+}
+
+
 - (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size resizingMode:(QMUIImageResizingMode)resizingMode {
     return [self qmui_imageResizedInLimitedSize:size resizingMode:resizingMode scale:self.scale];
 }
