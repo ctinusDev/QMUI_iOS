@@ -167,6 +167,11 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 
 /**
+ *  强制修改当前界面要支持的横竖屏方向，默认为 SupportedOrientationMask。
+ */
+@property(nonatomic, assign) UIInterfaceOrientationMask forceOrientationMask;
+
+/**
  *  设置要使用的显示/隐藏动画的类型，默认为`QMUIModalPresentationAnimationStyleFade`。
  *  @warning 当使用了`showingAnimation`和`hidingAnimation`时，该属性无效
  */

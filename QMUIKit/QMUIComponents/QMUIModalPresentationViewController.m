@@ -599,6 +599,10 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    if (self.forceOrientationMask != 0) {
+        return self.forceOrientationMask;
+    }
+    
     UIViewController *visibleViewController = [QMUIHelper visibleViewController];
     if (visibleViewController != self && [visibleViewController respondsToSelector:@selector(supportedInterfaceOrientations)]) {
         return [visibleViewController supportedInterfaceOrientations];

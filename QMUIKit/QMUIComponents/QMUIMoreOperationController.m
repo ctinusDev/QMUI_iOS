@@ -267,7 +267,8 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     modalPresentationViewController.maximumContentViewWidth = self.contentMaximumWidth;
     modalPresentationViewController.contentViewMargins = UIEdgeInsetsMake(self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin);
     modalPresentationViewController.contentViewController = self;
-    
+    modalPresentationViewController.forceOrientationMask = self.forceOrientationMask;
+
     __weak __typeof(modalPresentationViewController)weakModalController = modalPresentationViewController;
     modalPresentationViewController.layoutBlock = ^(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame) {
         weakModalController.contentView.frame = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);

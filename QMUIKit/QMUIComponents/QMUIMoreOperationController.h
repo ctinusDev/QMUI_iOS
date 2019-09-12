@@ -52,6 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface QMUIMoreOperationController : UIViewController <QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate, QMUIModalPresentationComponentProtocol>
 
+/**
+ *  强制修改当前界面要支持的横竖屏方向，默认为 SupportedOrientationMask。
+ */
+@property(nonatomic, assign) UIInterfaceOrientationMask forceOrientationMask;
+
 @property(nullable, nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;// 面板上半部分（不包含取消按钮）背景色
 @property(nonatomic, assign) CGFloat contentEdgeMargin UI_APPEARANCE_SELECTOR;// 面板距离屏幕的上下左右间距
 @property(nonatomic, assign) CGFloat contentMaximumWidth UI_APPEARANCE_SELECTOR;// 面板的最大宽度
