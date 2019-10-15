@@ -16,6 +16,7 @@
 #import "QMUINavigationButton.h"
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
+#import "UIColor+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUINavigationController.h"
 #import "QMUILog.h"
@@ -109,10 +110,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             UIImage *backIndicatorImage = [UINavigationBar appearance].backIndicatorImage;
             if (!backIndicatorImage) {
                 // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张，颜色按照 tintColor 来
-                UIColor *tintColor = QMUICMIActivated ? NavBarTintColor : ({
-                    UIView *view = [[UIView alloc] init];
-                    view.tintColor;
-                });
+                UIColor *tintColor = QMUICMIActivated ? NavBarTintColor : UIColor.qmui_systemTintColor;
                 backIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(13, 23) lineWidth:3 tintColor:tintColor];
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];
@@ -618,18 +616,6 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         });
         
         // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
-//        if (@available(iOS 11, *)) {
-//            ExtendImplementationOfVoidMethodWithoutArguments([UINavigationBar class], @selector(layoutSubviews), ^(UINavigationBar *selfObject) {
-//                UIView *contentView = selfObject.qmui_contentView;
-//                if (contentView) {
-//                    NSDirectionalEdgeInsets value = contentView.directionalLayoutMargins;
-//                    value.leading = value.trailing - (selfObject.qmui_customizingBackBarButtonItem ? 8 : 0);
-//                    contentView.directionalLayoutMargins = value;
-//                }
-//            });
-//        }
-        
-        // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
         // Xcode11 beta2 修改私有 view 的 directionalLayoutMargins 会 crash，换个方式
         if (@available(iOS 11, *)) {
             
@@ -711,7 +697,16 @@ static char kAssociatedObjectKey_customizingBackBarButtonItem;
                         if (navigationBar.items.count == 2 && !navigationBar.backItem.leftBarButtonItem && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem) {
                             // 如果从自定义返回按钮界面返回到根界面，且根界面左上角没有按钮，则不调整 layout，不然会有跳动。理论上不应该这么改，但暂时没想到优雅的解决方式
                         } else {
-                            navigationBar.qmui_customizingBackBarButtonItem = navigationBar.backItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                            // https://github.com/Tencent/QMUI_iOS/issues/737 这里要考虑自定义返回按钮的情况，leftBarButtonItem 和 backBarButtonItem 同时存在的情况下，leftBarButtonItem 会优先显示
+                            if (navigationBar.topItem.leftBarButtonItem) {
+                                // topViewController.navigationItem.leftBarButtonItem
+                                navigationBar.qmui_customizingBackBarButtonItem = navigationBar.topItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                            } else if (navigationBar.backItem.leftBarButtonItem) {
+                                // topViewController.navigationItem.backBarButtonItem
+                                navigationBar.qmui_customizingBackBarButtonItem = navigationBar.backItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                            } else {
+                                navigationBar.qmui_customizingBackBarButtonItem = NO;
+                            }
                         }
                     }
                 }

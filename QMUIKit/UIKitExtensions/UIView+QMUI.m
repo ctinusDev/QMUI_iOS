@@ -41,7 +41,6 @@
 QMUISynthesizeBOOLProperty(qmui_tintColorCustomized, setQmui_tintColorCustomized)
 QMUISynthesizeIdCopyProperty(qmui_frameWillChangeBlock, setQmui_frameWillChangeBlock)
 QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlock)
-QMUISynthesizeIdCopyProperty(qmui_layoutSubviewsBlock, setQmui_layoutSubviewsBlock)
 QMUISynthesizeIdCopyProperty(qmui_tintColorDidChangeBlock, setQmui_tintColorDidChangeBlock)
 QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
@@ -67,20 +66,16 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
             return originReturnValue;
         });
         
-        OverrideImplementation([UIView class], @selector(becomeFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^BOOL(UIView *selfObject) {
-                
-                if (IS_SIMULATOR && ![selfObject isKindOfClass:[UIWindow class]] && (selfObject.window ? !selfObject.window.keyWindow : YES) && !selfObject.qmui_visible) {
-                    [selfObject QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
-                }
-                
-                // call super
-                BOOL (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
-                BOOL result = originSelectorIMP(selfObject, originCMD);
-                
-                return result;
-            };
+        // 这个私有方法在 view 被调用 becomeFirstResponder 并且处于 window 上时，才会被调用，所以比 becomeFirstResponder 更适合用来检测
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIView class], NSSelectorFromString(@"_didChangeToFirstResponder:"), id, ^(UIView *selfObject, id firstArgv) {
+            if (selfObject == firstArgv && [selfObject conformsToProtocol:@protocol(UITextInput)]) {
+                // 像 QMUIModalPresentationViewController 那种以 window 的形式展示浮层，浮层里的输入框 becomeFirstResponder 的场景，[window makeKeyAndVisible] 被调用后，就会立即走到这里，但此时该 window 尚不是 keyWindow，所以这里延迟到下一个 runloop 里再去判断
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (IS_DEBUG && ![selfObject isKindOfClass:[UIWindow class]] && selfObject.window && !selfObject.window.keyWindow) {
+                        [selfObject QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
+                    }
+                });
+            }
         });
         
         OverrideImplementation([UIView class], @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
@@ -195,25 +190,6 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
             };
         });
         
-        
-        
-        // 目前发现 UIButton、UITabBarButton 等系统的 class 的 layoutSubviews 内没有调用 super，导致 UIView (QMUI) 里的重写不生效，所以要专门为这些 class 每个都重写一次
-        NSMutableArray<Class> *classes = @[UIView.class, UIButton.class].mutableCopy;
-        if (IOS_VERSION_NUMBER < 93000) {
-            [classes addObject:NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"])];
-        }
-        [classes enumerateObjectsUsingBlock:^(Class obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            ExtendImplementationOfVoidMethodWithoutArguments(obj, @selector(layoutSubviews), ^(__kindof UIView *selfObject) {
-                // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
-                if (selfObject.qmui_layoutSubviewsBlock) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (selfObject.qmui_layoutSubviewsBlock) {
-                            selfObject.qmui_layoutSubviewsBlock(selfObject);
-                        }
-                    });
-                }
-            });
-        }];
     });
 }
 
@@ -355,7 +331,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
     
     __block BOOL isPrivate = NO;
     NSString *classString = NSStringFromClass(self.class);
-    [@[@"LayoutContainer", @"NavigationItemButton", @"NavigationItemView", @"SelectionGrabber", @"InputViewContent", @"InputSetContainer", @"TextFieldContentView"] enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [@[@"LayoutContainer", @"NavigationItemButton", @"NavigationItemView", @"SelectionGrabber", @"InputViewContent", @"InputSetContainer", @"TextFieldContentView", @"KeyboardImpl"] enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (([classString hasPrefix:@"UI"] || [classString hasPrefix:@"_UI"]) && [classString containsString:obj]) {
             isPrivate = YES;
             *stop = YES;
@@ -459,7 +435,9 @@ static char kAssociatedObjectKey_viewController;
                                                [UIDatePicker class],
                                                [UIPickerView class],
                                                [UIVisualEffectView class],
-                                               [UIWebView class],
+                                               // Apple 不再接受使用了 UIWebView 的 App 提交，所以这里去掉 UIWebView
+                                               // https://github.com/Tencent/QMUI_iOS/issues/741
+//                                               [UIWebView class],
                                                [UIWindow class],
                                                [UINavigationBar class],
                                                [UIToolbar class],
@@ -986,6 +964,28 @@ static char kAssociatedObjectKey_shouldShowDebugColor;
 - (BOOL)qmui_shouldShowDebugColor {
     BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor) boolValue];
     return flag;
+}
+
+static char kAssociatedObjectKey_layoutSubviewsBlock;
+static NSMutableSet * qmui_registeredLayoutSubviewsBlockClasses;
+- (void)setQmui_layoutSubviewsBlock:(void (^)(__kindof UIView * _Nonnull))qmui_layoutSubviewsBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_layoutSubviewsBlock, qmui_layoutSubviewsBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (!qmui_registeredLayoutSubviewsBlockClasses) qmui_registeredLayoutSubviewsBlockClasses = [NSMutableSet set];
+    if (qmui_layoutSubviewsBlock) {
+        Class viewClass = self.class;
+        if (![qmui_registeredLayoutSubviewsBlockClasses containsObject:viewClass]) {
+            // Extend 每个实例对象的类是为了保证比子类的 layoutSubviews 逻辑要更晚调用
+            ExtendImplementationOfVoidMethodWithoutArguments(viewClass, @selector(layoutSubviews), ^(__kindof UIView *selfObject) {
+                if (selfObject.qmui_layoutSubviewsBlock && [selfObject isMemberOfClass:viewClass]) {
+                    selfObject.qmui_layoutSubviewsBlock(selfObject);
+                }
+            });
+        }
+    }
+}
+
+- (void (^)(UIView * _Nonnull))qmui_layoutSubviewsBlock {
+    return objc_getAssociatedObject(self, &kAssociatedObjectKey_layoutSubviewsBlock);
 }
 
 - (void)renderColorWithSubviews:(NSArray *)subviews {

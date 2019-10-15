@@ -104,11 +104,11 @@
 /// 屏幕高度，会根据横竖屏的变化而变化
 #define SCREEN_HEIGHT ([[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕宽度，跟横竖屏无关
-#define DEVICE_WIDTH (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width)
+/// 设备宽度，跟横竖屏无关
+#define DEVICE_WIDTH MIN([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕高度，跟横竖屏无关
-#define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
+/// 设备高度，跟横竖屏无关
+#define DEVICE_HEIGHT MAX([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
 /// 在 iPad 分屏模式下等于 app 实际运行宽度，否则等同于 SCREEN_WIDTH
 #define APPLICATION_WIDTH [QMUIHelper applicationSize].width
@@ -158,7 +158,7 @@
 /// tabBar相关frame
 #define TabBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 65 : (IOS_VERSION >= 12.0 ? 50 : 49)) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(49, 32) : 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
-/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
+/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算，iOS 13 起，来电等情况下状态栏高度不会改变)
 #define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 /// 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
@@ -263,6 +263,9 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 
 
 #pragma mark - 其他
+
+// 固定黑色的 StatusBarStyle，用于亮色背景，作为 -preferredStatusBarStyle 方法的 return 值使用。
+#define QMUIStatusBarStyleDarkContent [QMUIHelper statusBarStyleDarkContent]
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 

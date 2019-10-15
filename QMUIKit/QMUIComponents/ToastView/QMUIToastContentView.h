@@ -29,7 +29,7 @@
 @property(nonatomic, strong) UIView *customView;
 
 /**
- * 设置第一行大文字label
+ * 设置第一行大文字label。
  */
 @property(nonatomic, strong, readonly) UILabel *textLabel;
 
@@ -39,7 +39,7 @@
 @property(nonatomic, copy) NSString *textLabelText;
 
 /**
- * 设置第二行小文字label
+ * 设置第二行小文字label。
  */
 @property(nonatomic, strong, readonly) UILabel *detailTextLabel;
 

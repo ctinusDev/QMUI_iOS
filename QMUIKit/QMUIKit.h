@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.0.0";
+static NSString * const QMUI_VERSION = @"4.0.2";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -399,6 +399,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "QMUIThemeManager.h"
 #endif
 
+#if __has_include("QMUIThemeManagerCenter.h")
+#import "QMUIThemeManagerCenter.h"
+#endif
+
 #if __has_include("QMUITips.h")
 #import "QMUITips.h"
 #endif
@@ -507,6 +511,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "UILabel+QMUI.h"
 #endif
 
+#if __has_include("UIMenuController+QMUI.h")
+#import "UIMenuController+QMUI.h"
+#endif
+
 #if __has_include("UINavigationBar+QMUI.h")
 #import "UINavigationBar+QMUI.h"
 #endif
@@ -529,6 +537,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 
 #if __has_include("UISearchBar+QMUI.h")
 #import "UISearchBar+QMUI.h"
+#endif
+
+#if __has_include("UISearchController+QMUI.h")
+#import "UISearchController+QMUI.h"
 #endif
 
 #if __has_include("UISwitch+QMUI.h")
