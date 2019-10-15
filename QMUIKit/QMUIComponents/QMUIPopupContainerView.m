@@ -221,6 +221,7 @@
             if (!view.window || !weakSelf.superview) return;
             UIView *convertToView = weakSelf.popupWindow ? UIApplication.sharedApplication.delegate.window : weakSelf.superview;// 对于以 window 方式显示的情况，由于横竖屏旋转时，不同 window 的旋转顺序不同，所以可能导致 sourceBarItem 所在的 window 已经旋转了但 popupWindow 还没旋转（iOS 11 及以后），那么计算出来的坐标就错了，所以这里改为用 UIApplication window
             CGRect rect = [view qmui_convertRect:view.bounds toView:convertToView];
+            rect.origin.y += 13;
             weakSelf.sourceRect = rect;
         };
     }
