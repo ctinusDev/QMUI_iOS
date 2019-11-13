@@ -111,6 +111,8 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;
 
+@property(nonatomic, assign) CGFloat originYOffset;
+
 /// 可以是 UINavigationBar、UIToolbar 上的 UIBarButtonItem，或者 UITabBar 上的 UITabBarItem
 @property(nonatomic, weak) __kindof UIBarItem *sourceBarItem;
 
