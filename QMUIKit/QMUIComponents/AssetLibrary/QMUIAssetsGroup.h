@@ -43,11 +43,9 @@ typedef NS_ENUM(NSUInteger, QMUIAlbumSortType) {
 
 - (instancetype)initWithPHCollection:(PHAssetCollection *)phAssetCollection fetchAssetsOptions:(PHFetchOptions *)pHFetchOptions;
 
-/// 仅能通过 initWithPHCollection 和 initWithPHCollection:fetchAssetsOption 方法修改 phAssetCollection 的值
-@property(nonatomic, strong, readonly) PHAssetCollection *phAssetCollection;
+@property(nonatomic, strong) PHAssetCollection *phAssetCollection;
 
-/// 仅能通过 initWithPHCollection 和 initWithPHCollection:fetchAssetsOption 方法修改 phAssetCollection 后，产生一个对应的 PHAssetsFetchResults 保存到 phFetchResult 中
-@property(nonatomic, strong, readonly) PHFetchResult *phFetchResult;
+@property(nonatomic, strong) PHFetchResult *phFetchResult;
 
 /// 相册的名称
 - (NSString *)name;

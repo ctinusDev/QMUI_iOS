@@ -20,8 +20,7 @@
 
 @interface QMUIAssetsGroup()
 
-@property(nonatomic, strong, readwrite) PHAssetCollection *phAssetCollection;
-@property(nonatomic, strong, readwrite) PHFetchResult *phFetchResult;
+
 
 @end
 
