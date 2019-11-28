@@ -112,6 +112,17 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 - (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
 
 /**
+ *  异步请求 Asset 的发布图，可能会有网络请求
+ *
+ *  @param completion        完成请求后调用的 block，参数中包含了请求的预览图以及图片信息，这个 block 会被多次调用，
+ *                           其中第一次调用获取到的尺寸很小的低清图，然后不断调用，直到获取到高清图。
+ *  @param phProgressHandler 处理请求进度的 handler，不在主线程上执行，在 block 中修改 UI 时注意需要手工放到主线程处理。
+ *
+ *  @return 返回请求图片的请求 id
+ */
+- (NSInteger)requestPublishImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
+
+/**
  *  异步请求 Live Photo，可能会有网络请求
  *
  *  @param completion        完成请求后调用的 block，参数中包含了请求的 Live Photo 以及相关信息，若 assetType 不是 QMUIAssetTypeLivePhoto 则为 nil
