@@ -79,6 +79,14 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 - (UIImage *)previewImage;
 
 /**
+ *  Asset 的发布图
+ *
+ *  @warning 输出与当前设备屏幕大小相同尺寸的图片，如果图片原图小于当前设备屏幕的尺寸，则只输出原图大小的图片
+ *  @return Asset 的全屏图
+ */
+- (UIImage *)publishImage;
+
+/**
  *  异步请求 Asset 的原图，包含了系统照片“编辑”功能处理后的效果（剪裁，旋转和滤镜等），可能会有网络请求
  *
  *  @param completion        完成请求后调用的 block，参数中包含了请求的原图以及图片信息，这个 block 会被多次调用，

@@ -117,6 +117,29 @@ static NSString * const kAssetInfoSize = @"size";
     return resultImage;
 }
 
+- (UIImage *)publishImage {
+    __block UIImage *resultImage = nil;
+    
+    CGFloat scale = 1;
+    if (self.phAsset.pixelWidth > 0 && self.phAsset.pixelHeight > 0) {
+        if ((self.phAsset.pixelWidth / SCREEN_WIDTH) < (self.phAsset.pixelHeight / SCREEN_HEIGHT)) {
+            scale = SCREEN_WIDTH * ScreenScale * 2 / self.phAsset.pixelWidth;
+        } else {
+            scale = SCREEN_HEIGHT * ScreenScale * 2 / self.phAsset.pixelHeight;
+        }
+        scale = MIN(1, scale);
+    }
+    
+    PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
+    phImageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    phImageRequestOptions.networkAccessAllowed = NO;
+    phImageRequestOptions.synchronous = YES;
+    [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:self.phAsset targetSize:CGSizeMake(self.phAsset.pixelWidth * scale, self.phAsset.pixelHeight * scale) contentMode:PHImageContentModeAspectFit options:phImageRequestOptions resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        resultImage = result;
+    }];
+    return resultImage;
+}
+
 - (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
     imageRequestOptions.networkAccessAllowed = NO; // 允许访问网络
