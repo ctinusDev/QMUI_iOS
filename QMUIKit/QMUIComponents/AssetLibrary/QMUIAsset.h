@@ -57,6 +57,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 @property(nonatomic, assign) double downloadProgress; // 从 iCloud 下载资源大图的进度
 @property(nonatomic, assign) NSInteger requestID; // 从 iCloud 请求获得资源的大图的请求 ID
 @property (nonatomic, copy, readonly) NSString *identifier;// Asset 的标识，每个 QMUIAsset 的 identifier 都不同。只要两个 QMUIAsset 的 identifier 相同则认为它们是同一个 asset
+@property (nonatomic, strong) NSString *sourceURL;//asset下载路径
 
 /// Asset 的原图（包含系统相册“编辑”功能处理后的效果）
 - (UIImage *)originImage;
