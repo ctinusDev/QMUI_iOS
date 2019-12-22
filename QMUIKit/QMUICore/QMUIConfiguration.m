@@ -599,6 +599,11 @@ static BOOL QMUI_hasAppliedInitialTemplate;
             NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.normal.titleTextAttributes.mutableCopy;
             attributes[NSFontAttributeName] = tabBarItemTitleFont;
             itemAppearance.normal.titleTextAttributes = attributes.copy;
+            
+            attributes = itemAppearance.selected.titleTextAttributes.mutableCopy;
+            attributes[NSFontAttributeName] = tabBarItemTitleFont;
+            itemAppearance.selected.titleTextAttributes = attributes.copy;
+
         }];
         [self updateTabBarAppearance];
     } else {
@@ -607,15 +612,37 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (_tabBarItemTitleFont) {
             textAttributes[NSFontAttributeName] = _tabBarItemTitleFont;
         }
-        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
+        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal | UIControlStateSelected];
         [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
             [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
+                [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal | UIControlStateSelected];
             }];
         }];
 #ifdef IOS13_SDK_ALLOWED
     }
 #endif
+}
+
+- (void)setTabBarItemTitlePositionAdjustment:(UIOffset)tabBarItemTitlePositionAdjustment {
+    _tabBarItemTitlePositionAdjustment = tabBarItemTitlePositionAdjustment;
+    #ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+                itemAppearance.normal.titlePositionAdjustment = tabBarItemTitlePositionAdjustment;
+                itemAppearance.selected.titlePositionAdjustment = tabBarItemTitlePositionAdjustment;
+            }];
+            [self updateTabBarAppearance];
+        } else {
+    #endif
+            [UITabBarItem appearance].titlePositionAdjustment = tabBarItemTitlePositionAdjustment;
+            [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
+                [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    obj.titlePositionAdjustment = tabBarItemTitlePositionAdjustment;
+                }];
+            }];
+    #ifdef IOS13_SDK_ALLOWED
+        }
+    #endif
 }
 
 - (void)setTabBarItemTitleColor:(UIColor *)tabBarItemTitleColor {
