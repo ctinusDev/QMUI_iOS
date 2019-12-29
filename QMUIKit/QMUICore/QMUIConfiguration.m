@@ -618,10 +618,10 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (_tabBarItemTitleFont) {
             textAttributes[NSFontAttributeName] = _tabBarItemTitleFont;
         }
-        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal | UIControlStateSelected];
+        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
         [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
             [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal | UIControlStateSelected];
+                [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
             }];
         }];
 #ifdef IOS13_SDK_ALLOWED
