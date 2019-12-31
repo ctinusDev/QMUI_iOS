@@ -114,6 +114,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 弹出面板，一般在 init 完并且设置好 items 之后就调用这个接口来显示面板
 - (void)showFromBottom;
 
+- (void)showInView:(UIView *)view;
+
 /// 隐藏面板
 - (void)hideToBottom;
 

@@ -317,6 +317,67 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     }
     self.hideByCancel = NO;
     [self.qmui_modalPresentationViewController hideWithAnimated:YES completion:NULL];
+    [self.qmui_modalPresentationViewController hideInView:nil animated:YES completion:NULL];
+}
+
+- (void)showInView:(UIView *)view {
+    if (self.showing || self.animating) {
+        return;
+    }
+    
+    self.hideByCancel = YES;
+    
+    __weak __typeof(self)weakSelf = self;
+    
+    QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
+    modalPresentationViewController.delegate = self;
+    modalPresentationViewController.maximumContentViewWidth = self.contentMaximumWidth;
+    modalPresentationViewController.contentViewMargins = self.contentEdgeMargins;
+    modalPresentationViewController.contentViewController = self;
+    modalPresentationViewController.forceOrientationMask = self.forceOrientationMask;
+    
+    __weak __typeof(modalPresentationViewController)weakModalController = modalPresentationViewController;
+    modalPresentationViewController.layoutBlock = ^(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame) {
+        weakModalController.contentView.qmui_frameApplyTransform = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
+    };
+    modalPresentationViewController.showingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished)) {
+        
+        if ([weakSelf.delegate respondsToSelector:@selector(willPresentMoreOperationController:)]) {
+            [weakSelf.delegate willPresentMoreOperationController:weakSelf];
+        }
+        
+        dimmingView.alpha = 0;
+        weakModalController.contentView.frame = CGRectSetY(contentViewFrame, CGRectGetHeight(containerBounds));
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^(void) {
+            dimmingView.alpha = 1;
+            weakModalController.contentView.frame = contentViewFrame;
+        } completion:^(BOOL finished) {
+            weakSelf.showing = YES;
+            weakSelf.animating = NO;
+            if ([weakSelf.delegate respondsToSelector:@selector(didPresentMoreOperationController:)]) {
+                [weakSelf.delegate didPresentMoreOperationController:weakSelf];
+            }
+            if (completion) {
+                completion(finished);
+            }
+        }];
+    };
+    
+    modalPresentationViewController.hidingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished)) {
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^(void) {
+            dimmingView.alpha = 0;
+            weakModalController.contentView.frame = CGRectSetY(weakModalController.contentView.frame, CGRectGetHeight(containerBounds));
+        } completion:^(BOOL finished) {
+            if (completion) {
+                completion(finished);
+            }
+        }];
+    };
+    
+    self.animating = YES;
+    modalPresentationViewController.view.frame = view.bounds;
+    [view.qmui_viewController addChildViewController:modalPresentationViewController];
+    [modalPresentationViewController showInView:view animated:YES completion:NULL];
 }
 
 #pragma mark - Item
@@ -466,6 +527,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         return;
     }
     [self.qmui_modalPresentationViewController hideWithAnimated:YES completion:NULL];
+    [self.qmui_modalPresentationViewController hideInView:nil animated:YES completion:NULL];
 }
 
 - (void)handleItemViewEvent:(QMUIMoreOperationItemView *)itemView {
