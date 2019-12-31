@@ -137,6 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *tabBarShadowImageColor;
 @property(nonatomic, assign) UIBarStyle         tabBarStyle;
 @property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
+@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFontSelected;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColorSelected;
 @property(nonatomic, assign) UIOffset           tabBarItemTitlePositionAdjustment;

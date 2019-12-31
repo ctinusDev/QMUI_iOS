@@ -629,6 +629,35 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 #endif
 }
 
+- (void)setTabBarItemTitleFontSelected:(UIFont *)tabBarItemTitleFontSelected {
+    _tabBarItemTitleFontSelected = tabBarItemTitleFontSelected;
+    
+#ifdef IOS13_SDK_ALLOWED
+    if (@available(iOS 13.0, *)) {
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.selected.titleTextAttributes.mutableCopy;
+            attributes[NSFontAttributeName] = _tabBarItemTitleFontSelected;
+            itemAppearance.selected.titleTextAttributes = attributes.copy;
+
+        }];
+        [self updateTabBarAppearance];
+    } else {
+#endif
+        NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateSelected]];
+        if (_tabBarItemTitleFontSelected) {
+            textAttributes[NSFontAttributeName] = _tabBarItemTitleFontSelected;
+        }
+        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateSelected];
+        [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
+            [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [obj setTitleTextAttributes:textAttributes forState:UIControlStateSelected];
+            }];
+        }];
+#ifdef IOS13_SDK_ALLOWED
+    }
+#endif
+}
+
 - (void)setTabBarItemTitlePositionAdjustment:(UIOffset)tabBarItemTitlePositionAdjustment {
     _tabBarItemTitlePositionAdjustment = tabBarItemTitlePositionAdjustment;
     #ifdef IOS13_SDK_ALLOWED
