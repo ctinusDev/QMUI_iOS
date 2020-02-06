@@ -23,6 +23,7 @@
 #import "UIImage+QMUI.h"
 #import "CALayer+QMUI.h"
 #import "QMUIKeyboardManager.h"
+#import "CAAnimation+QMUI.h"
 
 static NSUInteger alertControllerCount = 0;
 
@@ -133,7 +134,7 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance = [[QMUIAlertController alloc] init];
         
         alertControllerAppearance.alertContentMargin = UIEdgeInsetsMake(0, 0, 0, 0);
-        alertControllerAppearance.alertContentMaximumWidth = 270;
+        alertControllerAppearance.alertContentMaximumWidth = 296;
         alertControllerAppearance.alertSeparatorColor = UIColorMake(211, 211, 219);
         alertControllerAppearance.alertTitleAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
         alertControllerAppearance.alertMessageAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
@@ -182,6 +183,8 @@ static QMUIAlertController *alertControllerAppearance;
 
 @property(nonatomic, assign, readwrite) QMUIAlertControllerStyle preferredStyle;
 @property(nonatomic, strong, readwrite) QMUIModalPresentationViewController *modalPresentationViewController;
+
+@property(nonatomic, strong) UIImageView *alertIconView;
 
 @property(nonatomic, strong) UIView *containerView;
 
@@ -426,13 +429,13 @@ static QMUIAlertController *alertControllerAppearance;
 
 - (void)updateCornerRadius {
     if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
-        if (self.containerView) { self.containerView.layer.cornerRadius = self.alertContentCornerRadius; self.containerView.clipsToBounds = YES; }
+        if (self.containerView) { self.containerView.layer.cornerRadius = self.alertContentCornerRadius; self.containerView.clipsToBounds = NO; }
         if (self.cancelButtonVisualEffectView) { self.cancelButtonVisualEffectView.layer.cornerRadius = self.alertContentCornerRadius; self.cancelButtonVisualEffectView.clipsToBounds = NO;}
         if (self.scrollWrapView) { self.scrollWrapView.layer.cornerRadius = 0; self.scrollWrapView.clipsToBounds = NO; }
     } else {
         if (self.containerView) { self.containerView.layer.cornerRadius = 0; self.containerView.clipsToBounds = NO; }
-        if (self.cancelButtonVisualEffectView) { self.cancelButtonVisualEffectView.layer.cornerRadius = self.sheetContentCornerRadius; self.cancelButtonVisualEffectView.clipsToBounds = YES; }
-        if (self.scrollWrapView) { self.scrollWrapView.layer.cornerRadius = self.sheetContentCornerRadius; self.scrollWrapView.clipsToBounds = YES; }
+        if (self.cancelButtonVisualEffectView) { self.cancelButtonVisualEffectView.layer.cornerRadius = self.sheetContentCornerRadius; self.cancelButtonVisualEffectView.clipsToBounds = NO; }
+        if (self.scrollWrapView) { self.scrollWrapView.layer.cornerRadius = self.sheetContentCornerRadius; self.scrollWrapView.clipsToBounds = NO; }
     }
 }
 
@@ -530,6 +533,8 @@ static QMUIAlertController *alertControllerAppearance;
         self.alertTextFields = [[NSMutableArray alloc] init];
         self.destructiveActions = [[NSMutableArray alloc] init];
         
+        self.alertIconView = [[UIImageView alloc] initWithImage:[QMUIHelper imageWithName:@"QMUIAlert_icon"]];
+        
         self.containerView = [[UIView alloc] init];
         
         self.maskView = [[UIControl alloc] init];
@@ -541,9 +546,17 @@ static QMUIAlertController *alertControllerAppearance;
         self.mainVisualEffectView = [[UIView alloc] init];
         self.cancelButtonVisualEffectView = [[UIView alloc] init];
         self.headerScrollView = [[UIScrollView alloc] init];
+        self.headerScrollView.layer.cornerRadius = 8;
+        self.headerScrollView.layer.shadowColor = [UIColor colorWithRed:0/255.0 green:0/255.0 blue:0/255.0 alpha:0.32].CGColor;
+        self.headerScrollView.layer.shadowOffset = CGSizeMake(0,4);
+        self.headerScrollView.layer.shadowOpacity = 1;
+        self.headerScrollView.layer.shadowRadius = 8;
+        self.headerScrollView.clipsToBounds = NO;
         self.headerScrollView.scrollsToTop = NO;
+        
         self.buttonScrollView = [[UIScrollView alloc] init];
         self.buttonScrollView.scrollsToTop = NO;
+        self.buttonScrollView.clipsToBounds = NO;
         if (@available(iOS 11, *)) {
             self.headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
             self.buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -571,6 +584,7 @@ static QMUIAlertController *alertControllerAppearance;
     [super viewDidLoad];
     [self.view addSubview:self.maskView];
     [self.view addSubview:self.containerView];
+    [self.view addSubview:self.alertIconView];
     [self.containerView addSubview:self.scrollWrapView];
     [self.scrollWrapView addSubview:self.headerScrollView];
     [self.scrollWrapView addSubview:self.buttonScrollView];
@@ -627,7 +641,7 @@ static QMUIAlertController *alertControllerAppearance;
         // 内容scrollView的布局
         self.headerScrollView.frame = CGRectSetHeight(self.headerScrollView.frame, contentOriginY);
         self.headerScrollView.contentSize = CGSizeMake(CGRectGetWidth(self.headerScrollView.bounds), contentOriginY);
-        contentOriginY = CGRectGetMaxY(self.headerScrollView.frame);
+        contentOriginY = CGRectGetMaxY(self.headerScrollView.frame) + 16;
         // 按钮布局
         self.buttonScrollView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), 0);
         contentOriginY = 0;
@@ -647,17 +661,34 @@ static QMUIAlertController *alertControllerAppearance;
             if (!verticalLayout) {
                 // 对齐系统，先 add 的在右边，后 add 的在左边
                 QMUIAlertAction *leftAction = newOrderActions[1];
-                leftAction.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
+                leftAction.button.frame = CGRectMake(31, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
                 leftAction.button.qmui_borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionRight;
+                leftAction.button.layer.cornerRadius = 8;
+                leftAction.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
+                leftAction.button.layer.shadowOffset = CGSizeMake(0,4);
+                leftAction.button.layer.shadowOpacity = 1;
+                leftAction.button.layer.shadowRadius = 8;
+                
                 QMUIAlertAction *rightAction = newOrderActions[0];
-                rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame), contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
+                rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame) + 12, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
                 rightAction.button.qmui_borderPosition = QMUIViewBorderPositionTop;
+                rightAction.button.layer.cornerRadius = 8;
+                rightAction.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
+                rightAction.button.layer.shadowOffset = CGSizeMake(0,4);
+                rightAction.button.layer.shadowOpacity = 1;
+                rightAction.button.layer.shadowRadius = 8;
+                
                 contentOriginY = CGRectGetMaxY(leftAction.button.frame);
             } else {
                 for (int i = 0; i < newOrderActions.count; i++) {
                     QMUIAlertAction *action = newOrderActions[i];
-                    action.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), self.alertButtonHeight);
+                    action.button.frame = CGRectMake((CGRectGetWidth(self.buttonScrollView.bounds) - (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2)/2, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
                     action.button.qmui_borderPosition = QMUIViewBorderPositionTop;
+                                    action.button.layer.cornerRadius = 8;
+                    action.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
+                    action.button.layer.shadowOffset = CGSizeMake(0,4);
+                    action.button.layer.shadowOpacity = 1;
+                    action.button.layer.shadowRadius = 8;
                     contentOriginY = CGRectGetMaxY(action.button.frame);
                 }
             }
@@ -666,7 +697,7 @@ static QMUIAlertController *alertControllerAppearance;
         self.buttonScrollView.frame = CGRectSetHeight(self.buttonScrollView.frame, contentOriginY);
         self.buttonScrollView.contentSize = CGSizeMake(CGRectGetWidth(self.buttonScrollView.bounds), contentOriginY);
         // 容器最后布局
-        CGFloat contentHeight = CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds);
+        CGFloat contentHeight = CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds) + 16;
         CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds);
         if (contentHeight > screenSpaceHeight - 20) {
             screenSpaceHeight -= 20;
@@ -693,6 +724,7 @@ static QMUIAlertController *alertControllerAppearance;
         
         CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, (screenSpaceHeight - contentHeight - self.keyboardHeight) / 2, CGRectGetWidth(self.containerView.bounds), CGRectGetHeight(self.scrollWrapView.bounds));
         self.containerView.frame = CGRectFlatted(CGRectApplyAffineTransform(containerRect, self.containerView.transform));
+        self.alertIconView.frame = CGRectMake(self.containerView.qmui_left + (self.containerView.qmui_width - 48)/2, self.containerView.qmui_top - 35, 48, 48);
     }
     
     else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
@@ -921,6 +953,37 @@ static QMUIAlertController *alertControllerAppearance;
         [self.delegate willShowAlertController:self];
     }
     
+    CFTimeInterval duration = 0.6;
+    CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+    scale.values = @[@0.0, @1.04, @0.99, @1];
+    scale.keyTimes = @[@0.0, @0.333, @0.666, @1];
+    scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    scale.duration = duration;
+    scale.fillMode = kCAFillModeForwards;
+    scale.removedOnCompletion = YES;
+    
+    CAKeyframeAnimation *opacity = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+    opacity.values = @[@0.0, @1, @1];
+    opacity.keyTimes = @[@0.0, @0.333, @1];
+    opacity.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+    opacity.duration = duration;
+    opacity.fillMode = kCAFillModeForwards;
+    opacity.removedOnCompletion = YES;
+    
+    [self.alertIconView.layer addAnimation:scale forKey:@"scale"];
+    [self.alertIconView.layer addAnimation:opacity forKey:@"opacity"];
+    
+    [self.headerScrollView.layer addAnimation:scale forKey:@"scale"];
+    [self.headerScrollView.layer addAnimation:opacity forKey:@"opacity"];
+    
+    [self.buttonScrollView.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (![obj isKindOfClass:QMUIButton.class]) {
+            return ;
+        }
+        [obj.layer addAnimation:scale forKey:@"scale"];
+        [obj.layer addAnimation:opacity forKey:@"opacity"];
+    }];
+    
     __weak __typeof(self)weakSelf = self;
     
     [self.modalPresentationViewController showWithAnimated:animated completion:^(BOOL finished) {
@@ -946,7 +1009,11 @@ static QMUIAlertController *alertControllerAppearance;
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(void))completion {
-    if ([self.delegate respondsToSelector:@selector(shouldHideAlertController:)] && ![self.delegate shouldHideAlertController:self]) {
+    [self hideWithAnimated:animated clickedAlertAction:nil completion:completion];
+}
+
+- (void)hideWithAnimated:(BOOL)animated clickedAlertAction:(QMUIAlertAction *)alertAction completion:(void (^)(void))completion {
+        if ([self.delegate respondsToSelector:@selector(shouldHideAlertController:)] && ![self.delegate shouldHideAlertController:self]) {
         return;
     }
     
@@ -962,23 +1029,75 @@ static QMUIAlertController *alertControllerAppearance;
         [self.delegate willHideAlertController:self];
     }
     
-    __weak __typeof(self)weakSelf = self;
-    
-    [self.modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
-        weakSelf.modalPresentationViewController = nil;
-        weakSelf.willShow = NO;
-        weakSelf.showing = NO;
-        weakSelf.maskView.alpha = 0;
+    if (animated) {
+        CFTimeInterval duration = 0.4;
+        CAKeyframeAnimation *opacity = [CAKeyframeAnimation animationWithKeyPath:@"opacity"];
+        opacity.values = @[@1, @1, @0];
+        opacity.keyTimes = @[@0.0, @0.5, @1];
+        opacity.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+        opacity.duration = duration;
+        opacity.fillMode = kCAFillModeForwards;
+        opacity.removedOnCompletion = NO;
+        [self.maskView.layer addAnimation:opacity forKey:@"opacity1"];
+        [self.alertIconView.layer addAnimation:opacity forKey:@"opacity1"];
+        [self.headerScrollView.layer addAnimation:opacity forKey:@"opacity1"];
+        [self.buttonScrollView.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![obj isKindOfClass:QMUIButton.class]) {
+                return ;
+            }
+            if (obj != alertAction.button) {
+                [obj.layer addAnimation:opacity forKey:@"opacity1"];
+            }
+        }];
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
-            weakSelf.containerView.alpha = 0;
-        } else {
-            weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
+            [self.containerView.layer addAnimation:opacity forKey:@"opacity1"];
         }
-        if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
-            [weakSelf.delegate didHideAlertController:weakSelf];
-        }
-        if (completion) completion();
-    }];
+        
+        CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+        scale.values = @[@1, @1.04, @0.0];
+        scale.keyTimes = @[@0.0, @0.2, @1];
+        scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+        scale.duration = duration;
+        scale.fillMode = kCAFillModeForwards;
+        scale.removedOnCompletion = NO;
+        scale.qmui_animationDidStopBlock = ^(__kindof CAAnimation *aAnimation, BOOL finished) {
+            __weak __typeof(self)weakSelf = self;
+            [self.modalPresentationViewController hideWithAnimated:NO completion:^(BOOL finished) {
+                weakSelf.modalPresentationViewController = nil;
+                weakSelf.willShow = NO;
+                weakSelf.showing = NO;
+                weakSelf.maskView.alpha = 0;
+                if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
+                    weakSelf.containerView.alpha = 0;
+                } else {
+                    weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
+                }
+                if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
+                    [weakSelf.delegate didHideAlertController:weakSelf];
+                }
+                if (completion) completion();
+            }];
+        };
+        
+        [alertAction.button.layer addAnimation:scale forKey:@"scale1"];
+    } else {
+        __weak __typeof(self)weakSelf = self;
+        [self.modalPresentationViewController hideWithAnimated:NO completion:^(BOOL finished) {
+            weakSelf.modalPresentationViewController = nil;
+            weakSelf.willShow = NO;
+            weakSelf.showing = NO;
+            weakSelf.maskView.alpha = 0;
+            if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
+                weakSelf.containerView.alpha = 0;
+            } else {
+                weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
+            }
+            if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
+                [weakSelf.delegate didHideAlertController:weakSelf];
+            }
+            if (completion) completion();
+        }];
+    }
     
     // 减少alertController计数
     alertControllerCount--;
@@ -1114,7 +1233,7 @@ static QMUIAlertController *alertControllerAppearance;
         UIColor *highlightBackgroundColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonHighlightBackgroundColor : self.sheetButtonHighlightBackgroundColor;
         UIColor *borderColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertSeparatorColor : self.sheetSeparatorColor;
         
-        alertAction.button.clipsToBounds = alertAction.style == QMUIAlertActionStyleCancel;
+        alertAction.button.clipsToBounds = NO;
         alertAction.button.backgroundColor = backgroundColor;
         alertAction.button.highlightedBackgroundColor = highlightBackgroundColor;
         alertAction.button.qmui_borderColor = borderColor;
@@ -1179,7 +1298,7 @@ static QMUIAlertController *alertControllerAppearance;
 #pragma mark - <QMUIAlertActionDelegate>
 
 - (void)didClickAlertAction:(QMUIAlertAction *)alertAction {
-    [self hideWithAnimated:YES completion:^{
+    [self hideWithAnimated:YES clickedAlertAction:alertAction completion:^{
         if (alertAction.handler) {
             alertAction.handler(self, alertAction);
         }
