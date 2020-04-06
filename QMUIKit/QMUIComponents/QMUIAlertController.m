@@ -614,7 +614,15 @@ static NSUInteger alertControllerCount = 0;
             if (!verticalLayout) {
                 // 对齐系统，先 add 的在右边，后 add 的在左边
                 QMUIAlertAction *leftAction = newOrderActions[1];
-                leftAction.button.frame = CGRectMake(31, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
+                CGSize leftSize = [leftAction.button sizeThatFits:CGSizeMax];
+                leftSize.width = MAX(leftSize.width + 10 * 2, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2);
+                QMUIAlertAction *rightAction = newOrderActions[0];
+                CGSize rightSize = [rightAction.button sizeThatFits:CGSizeMax];
+                rightSize.width = MAX(rightSize.width + 10 * 2, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2);
+                
+                CGFloat originX = (CGRectGetWidth(self.buttonScrollView.bounds) - leftSize.width - rightSize.width - 12)/2;
+                
+                leftAction.button.frame = CGRectMake(originX, contentOriginY, leftSize.width, self.alertButtonHeight);
                 leftAction.button.qmui_borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionRight;
                 leftAction.button.layer.cornerRadius = 8;
                 leftAction.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
@@ -622,8 +630,7 @@ static NSUInteger alertControllerCount = 0;
                 leftAction.button.layer.shadowOpacity = 1;
                 leftAction.button.layer.shadowRadius = 8;
                 
-                QMUIAlertAction *rightAction = newOrderActions[0];
-                rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame) + 12, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
+                rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame) + 12, contentOriginY, rightSize.width, self.alertButtonHeight);
                 rightAction.button.qmui_borderPosition = QMUIViewBorderPositionTop;
                 rightAction.button.layer.cornerRadius = 8;
                 rightAction.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
