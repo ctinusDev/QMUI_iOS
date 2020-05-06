@@ -47,13 +47,28 @@ BeginIgnoreClangWarning(-Wincomplete-implementation)
 @end
 
 @implementation NSObject (QMUIAppearnace)
++ (void)enumerateClasses:(void(^)(Class class, BOOL *stop))enumeration {
+    BOOL stop = NO;
+    Class tempClass = self;
+    while (tempClass && !stop) {
+        enumeration(tempClass, &stop);
+        if (!stop) {
+            tempClass = class_getSuperclass(tempClass);
+        }
+    }
+}
 
 - (void)qmui_applyAppearance {
     if ([self.class respondsToSelector:@selector(appearance)]) {
-        NSArray<NSInvocation *> *invocations = [self.class.appearance valueForKey:@"_appearanceInvocations"];
-        [invocations enumerateObjectsUsingBlock:^(NSInvocation * _Nonnull invocation, NSUInteger idx, BOOL * _Nonnull stop) {
-            invocation.target = [QMUIWeakObjectContainer containerWithObject:self];
-            [invocation invoke];
+        [self.class enumerateClasses:^(__unsafe_unretained Class class, BOOL *stop) {
+            NSArray<NSInvocation *> *invocations = [class.appearance valueForKey:@"_appearanceInvocations"];
+            if (invocations) {
+                [invocations enumerateObjectsUsingBlock:^(NSInvocation * _Nonnull invocation, NSUInteger idx, BOOL * _Nonnull stop) {
+                    invocation.target = [QMUIWeakObjectContainer containerWithObject:self];
+                    [invocation invoke];
+                }];
+                *stop = YES;
+            }
         }];
     }
 }
