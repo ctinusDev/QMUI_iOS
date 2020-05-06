@@ -642,7 +642,9 @@ static NSUInteger alertControllerCount = 0;
             } else {
                 for (int i = 0; i < newOrderActions.count; i++) {
                     QMUIAlertAction *action = newOrderActions[i];
-                    action.button.frame = CGRectMake((CGRectGetWidth(self.buttonScrollView.bounds) - (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2)/2, contentOriginY, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2, self.alertButtonHeight);
+                    CGSize size = [action.button sizeThatFits:CGSizeMax];
+                    size.width = MAX(size.width + 20 * 2, (CGRectGetWidth(self.buttonScrollView.bounds) - 31 * 2 - 12) / 2);
+                    action.button.frame = CGRectMake((CGRectGetWidth(self.buttonScrollView.bounds) - size.width)/2, contentOriginY, size.width, self.alertButtonHeight);
                     action.button.qmui_borderPosition = QMUIViewBorderPositionTop;
                                     action.button.layer.cornerRadius = 8;
                     action.button.layer.shadowColor = [UIColor colorWithRed:25/255.0 green:26/255.0 blue:27/255.0 alpha:0.32].CGColor;
