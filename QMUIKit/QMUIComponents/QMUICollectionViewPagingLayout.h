@@ -18,7 +18,8 @@
 typedef NS_ENUM(NSInteger, QMUICollectionViewPagingLayoutStyle) {
     QMUICollectionViewPagingLayoutStyleDefault, // 普通模式，水平滑动
     QMUICollectionViewPagingLayoutStyleScale,   // 缩放模式，两边的item会小一点，逐渐向中间放大
-    QMUICollectionViewPagingLayoutStyleRotation // 旋转模式，围绕底部某个点为中心旋转
+    QMUICollectionViewPagingLayoutStyleRotation,// 旋转模式，围绕底部某个点为中心旋转
+    QMUICollectionViewPagingLayoutStyleTranslationY,// 平移模式，中心item回偏移位置
 };
 
 /**
@@ -89,4 +90,10 @@ extern const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic;
  */
 @property(nonatomic, assign) CGFloat rotationRatio;
 @property(nonatomic, assign) CGFloat rotationRadius;
+@end
+
+@interface QMUICollectionViewPagingLayout (TranslationStyle)
+
+@property(nonatomic, assign) CGFloat translationY;
+
 @end

@@ -25,6 +25,7 @@
     CGFloat _rotationRadius;
     CGSize _finalItemSize;
     CGFloat _pagingThreshold;
+    CGFloat _translationY;
     BOOL _debug;
 }
 
@@ -116,6 +117,19 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 
 @end
 
+@implementation QMUICollectionViewPagingLayout (TranslationStyle)
+
+- (CGFloat)translationY {
+    return _translationY;
+}
+
+- (void)setTranslationY:(CGFloat)translationY {
+    _translationY = translationY;
+}
+
+@end
+
+
 @implementation QMUICollectionViewPagingLayout
 
 - (instancetype)initWithStyle:(QMUICollectionViewPagingLayoutStyle)style {
@@ -129,6 +143,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         self.minimumScale = 0.94;
         self.rotationRatio = .5;
         self.rotationRadius = QMUICollectionViewPagingLayoutRotationRadiusAutomatic;
+        self.translationY = 12;
         
         self.minimumInteritemSpacing = 0;
         self.scrollDirection = UICollectionViewScrollDirectionHorizontal;
@@ -163,7 +178,9 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 }
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    if (self.style == QMUICollectionViewPagingLayoutStyleScale || self.style == QMUICollectionViewPagingLayoutStyleRotation) {
+    if (self.style == QMUICollectionViewPagingLayoutStyleScale ||
+        self.style == QMUICollectionViewPagingLayoutStyleRotation ||
+        self.style == QMUICollectionViewPagingLayoutStyleTranslationY) {
         return YES;
     }
     return !CGSizeEqualToSize(self.collectionView.bounds.size, newBounds.size);
@@ -220,6 +237,16 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
             }
         }
         centerAttribute.zIndex = 10;
+        return resultAttributes;
+    }
+    
+    if (self.style == QMUICollectionViewPagingLayoutStyleTranslationY) {
+        for (UICollectionViewLayoutAttributes *attributes in resultAttributes) {
+            CGFloat distance = ABS(offset - attributes.center.x);
+
+            attributes.transform = CGAffineTransformMakeTranslation(0, MAX(0, self.translationY * (1 - distance / itemSize.width / 2)));
+            attributes.zIndex = 1;
+        }
         return resultAttributes;
     }
     
