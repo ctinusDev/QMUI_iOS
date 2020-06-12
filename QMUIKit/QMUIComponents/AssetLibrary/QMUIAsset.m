@@ -195,10 +195,10 @@ static NSString * const kAssetInfoSize = @"size";
 - (NSInteger)requestPublishImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     CGFloat scale = 1;
     if (self.phAsset.pixelWidth > 0 && self.phAsset.pixelHeight > 0) {
-        if ((self.phAsset.pixelWidth / SCREEN_WIDTH) < (self.phAsset.pixelHeight / SCREEN_HEIGHT)) {
-            scale = SCREEN_WIDTH * ScreenScale * 2 / self.phAsset.pixelWidth;
+        if (self.phAsset.pixelWidth < self.phAsset.pixelHeight) {
+            scale = 1656.0 / self.phAsset.pixelWidth;
         } else {
-            scale = SCREEN_HEIGHT * ScreenScale * 2 / self.phAsset.pixelHeight;
+            scale = 1656.0 / self.phAsset.pixelHeight;
         }
         scale = MIN(1, scale);
     }
